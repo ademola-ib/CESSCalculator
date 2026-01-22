@@ -1,0 +1,123 @@
+import { PageHeader } from "@/components/layout/PageHeader";
+import { ManualNav } from "@/components/layout/ManualNav";
+
+<PageHeader title="Frame Analysis Guide" description="Instructions for rigid frame analysis" showBack />
+<ManualNav />
+
+<div className="prose prose-invert mt-8 max-w-none">
+
+## Frame Analysis Overview
+
+The frame analysis module handles multi-bay, multi-storey rigid frame structures using slope-deflection equations with joint compatibility and equilibrium.
+
+## Input Parameters
+
+### Frame Geometry
+
+**Number of Bays**
+- Horizontal divisions in the frame
+- Range: 1 to 5 bays
+- Each bay can have equal or custom width
+
+**Number of Stories**
+- Vertical divisions in the frame
+- Range: 1 to 5 stories
+- Each story can have equal or custom height
+
+**Bay Width (m)**
+- Horizontal distance between columns
+- Must be positive
+- Example: 6.0 meters
+
+**Story Height (m)**
+- Vertical distance between floors
+- Must be positive
+- Example: 4.0 meters
+
+### Member Properties
+
+**Column EI (kN·m²)**
+- Flexural rigidity of vertical members
+- Typically stiffer than beams for lateral stability
+- Example: 80000 kN·m²
+
+**Beam EI (kN·m²)**
+- Flexural rigidity of horizontal members
+- Must be positive
+- Example: 60000 kN·m²
+
+## Analysis Method
+
+The solver uses the **slope-deflection method** which:
+
+1. Expresses member end moments in terms of rotations and deflections
+2. Enforces equilibrium at each joint
+3. Enforces compatibility (continuous rotations/displacements)
+4. Solves the resulting system of equations
+5. Back-calculates member forces from the displacement solution
+
+## Results Interpretation
+
+### Joint Displacements
+
+Shows the calculated displacements and rotations at each node:
+
+- **Δx (mm)** - Horizontal displacement
+- **Δy (mm)** - Vertical displacement (negative is downward)
+- **θ (rad)** - Joint rotation (small angle approximation)
+
+### Member Forces
+
+For each member, the results include:
+
+- **Axial Force** - Tension/compression in the member
+- **Shear Force** - Transverse force
+- **Bending Moment** - End moments from slope-deflection equations
+
+### Support Reactions
+
+Vertical and horizontal reactions at fixed/pinned supports. Verify equilibrium:
+- Sum of horizontal reactions = horizontal loads
+- Sum of vertical reactions = vertical loads
+- Sum of moments about any point = applied moments
+
+## Common Frame Types
+
+**Portal Frame (1 bay, 1 story)**
+- Simple rigid frame with two columns and one beam
+- Common in industrial buildings
+
+**Multi-Bay Frame (2-3 bays, 1 story)**
+- Multiple portal frames connected
+- Efficient for warehouses, parking structures
+
+**Multi-Story Frame (1 bay, 2+ stories)**
+- Vertical stacking of portal frames
+- Common in building frames
+
+## Tips
+
+- Start with a single-bay, single-story frame to understand the results format
+- Ensure member stiffnesses are realistic for your materials
+- For steel: E ≈ 200 GPa, For concrete: E ≈ 25-30 GPa
+- Check displacement limits against building codes
+
+## Limitations (MVP)
+
+The current implementation:
+- Assumes all joints are rigid connections
+- Uses small displacement theory (linear analysis)
+- Does not include second-order (P-Δ) effects
+- Loading interface is simplified (enhance in production version)
+
+Future versions will support:
+- Custom loading per member
+- Sidesway/no-sidesway options
+- Pinned connections
+- Non-prismatic members
+
+</div>
+
+export default function Page({ children }) {
+  return <div className="container mx-auto max-w-4xl p-4 pb-24">{children}</div>;
+}

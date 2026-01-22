@@ -1,0 +1,154 @@
+import { PageHeader } from "@/components/layout/PageHeader";
+import { ManualNav } from "@/components/layout/ManualNav";
+
+<PageHeader title="Workflow Guide" description="Best practices for efficient analysis" showBack />
+<ManualNav />
+
+<div className="prose prose-invert mt-8 max-w-none">
+
+## Recommended Workflow
+
+Follow this systematic approach for accurate and efficient structural analysis.
+
+## 1. Problem Setup
+
+**Define the Structure**
+- Sketch the beam/frame on paper first
+- Identify support types and locations
+- Mark all loads with magnitudes and positions
+- Note any special conditions (settlement, temperature, etc.)
+
+**Gather Properties**
+- Collect material properties (E values)
+- Determine cross-section properties (I values)
+- Calculate EI for each member
+- Verify units are consistent
+
+## 2. Create Project
+
+**Start New Analysis**
+1. From dashboard, select Beam or Frame analysis
+2. Give the project a descriptive name
+3. Choose the appropriate structural type
+
+**Input Geometry**
+- Enter dimensions carefully
+- Double-check values before proceeding
+- Use consistent units throughout (recommended: m, kN, kN·m²)
+
+## 3. Define Loading
+
+**Load Application**
+- Add loads one at a time
+- Verify load magnitudes and positions
+- Consider load combinations if applicable
+- Save after each major input step
+
+**Load Cases**
+- For MVP: Single load case per project
+- Create duplicate projects for different load combinations
+- Name projects clearly (e.g., "Beam_DL", "Beam_LL")
+
+## 4. Run Analysis
+
+**Execute Solver**
+- Switch to Results tab to trigger analysis
+- Review calculated reactions first
+- Check equilibrium (reactions should equal loads)
+
+**Initial Validation**
+- Do reactions make sense?
+- Are signs consistent with your sketch?
+- Is symmetry preserved (if applicable)?
+
+## 5. Interpret Results
+
+**Diagrams Review**
+- SFD: Check for expected jumps at point loads
+- BMD: Verify zero moment at simply supported ends
+- Deflection: Confirm maximum is at expected location
+
+**Numerical Checks**
+- Maximum values are reasonable
+- Signs are correct (tension/compression)
+- Displacements are within code limits
+
+## 6. Documentation
+
+**Export Results**
+- Use PDF export for reports
+- Include project name, date, and assumptions
+- Attach diagrams and key values
+
+**Project Archival**
+- Rename project with final description
+- Duplicate if you need variations
+- Export data backup from Settings
+
+## Best Practices
+
+### Organization
+
+- Use clear, descriptive project names
+- Include load case in name (e.g., "Bridge_Beam_DL+LL")
+- Create separate projects for parametric studies
+- Regularly export backups
+
+### Validation
+
+- Hand-check simple cases before complex ones
+- Compare with published solutions when available
+- Verify equilibrium at every stage
+- Check units meticulously
+
+### Efficiency
+
+- Duplicate projects instead of re-entering data
+- Use History to quickly access recent work
+- Save intermediate steps during complex analyses
+- Export results promptly to avoid losing work
+
+## Common Pitfalls
+
+**Input Errors**
+- Forgetting to save after changes
+- Mixing units (kN with lbf, meters with feet)
+- Incorrect sign convention
+- Transposing dimensions
+
+**Analysis Errors**
+- Not checking equilibrium
+- Ignoring warnings or unrealistic results
+- Misinterpreting sign conventions
+- Skipping validation steps
+
+**Workflow Issues**
+- Not saving frequently enough
+- Poor project naming conventions
+- Losing track of load combinations
+- Forgetting to export final results
+
+## Example: Complete Analysis
+
+**Problem:** 8m simply supported beam, 40 kN point load at 3m from left, EI = 50000 kN·m²
+
+1. **Setup**: Sketch beam with supports at x=0 and x=8, load at x=3
+2. **Create**: New beam project, name "Example_8m_40kN"
+3. **Input**: Length=8, EI=50000, load=40 kN at position=3
+4. **Save**: Click Save Project
+5. **Analyze**: Go to Results tab
+6. **Verify**: R1 = 25 kN, R2 = 15 kN (sum = 40 kN ✓)
+7. **Review**: Check max moment ≈ 75 kN·m at x=3
+8. **Export**: Download PDF with diagrams
+
+## Additional Resources
+
+- Review the Getting Started guide for basic navigation
+- See Beam Analysis and Frame Analysis guides for specific details
+- Check Settings for data export and backup options
+
+</div>
+
+export default function Page({ children }) {
+  return <div className="container mx-auto max-w-4xl p-4 pb-24">{children}</div>;
+}

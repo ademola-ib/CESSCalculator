@@ -1,0 +1,105 @@
+import { PageHeader } from "@/components/layout/PageHeader";
+import { ManualNav } from "@/components/layout/ManualNav";
+
+<PageHeader title="Beam Analysis Guide" description="Detailed instructions for beam analysis" showBack />
+<ManualNav />
+
+<div className="prose prose-invert mt-8 max-w-none">
+
+## Beam Analysis Overview
+
+The beam analysis module solves for reactions, shear force, bending moment, and deflection in single and multi-span beams using slope-deflection methods.
+
+## Input Parameters
+
+### Beam Properties
+
+**Total Length (m)**
+- The overall length of the beam from left to right
+- Must be a positive number
+- Example: 10.0 meters
+
+**EI (kN·m²)**
+- Flexural rigidity of the beam
+- Product of Young's modulus (E) and moment of inertia (I)
+- Must be positive
+- Example: 50000 kN·m²
+
+**Number of Spans**
+- Select 1, 2, or 3 spans
+- Multi-span beams have intermediate supports
+- Continuous beams use slope-deflection compatibility
+
+### Loading Conditions
+
+**Load Type**
+- **Point Load** - Concentrated force at a specific location
+- **Uniformly Distributed Load (UDL)** - Constant load per unit length
+- **Applied Moment** - Concentrated couple
+
+**Load Magnitude**
+- For point loads and UDL: Enter value in kN or kN/m
+- For moments: Enter value in kN·m
+- Can be positive (downward) or negative (upward for unusual cases)
+
+**Load Position** (Point loads only)
+- Distance from the left support in meters
+- Must be within the beam length
+- Example: For a 10m beam, position can range from 0 to 10
+
+## Support Conditions
+
+The MVP assumes:
+- **Single span**: Simply supported (pinned-roller)
+- **Multi-span**: Continuous beam with intermediate simple supports
+
+Future versions will allow custom support configuration.
+
+## Results Interpretation
+
+### Support Reactions
+
+Displayed in kN for each support. Verify that:
+- Sum of vertical reactions equals total applied load
+- Reactions are reasonable for the given loading
+
+### Shear Force Diagram (SFD)
+
+- Shows internal shear at each point along the beam
+- Sudden jumps indicate point loads
+- Slope indicates distributed load intensity
+- Zero crossing points identify potential maximum moment locations
+
+### Bending Moment Diagram (BMD)
+
+- Shows internal moment at each point
+- Maximum moment often occurs where shear is zero
+- Sign convention: Positive bending creates tension at bottom fiber
+
+### Deflection Diagram
+
+- Shows vertical displacement along the beam
+- Maximum deflection often at mid-span for simple beams
+- Values in millimeters
+- Check against code limits (L/360, L/240, etc.)
+
+## Example Workflow
+
+1. **Define Geometry**: Enter beam length (e.g., 8m) and EI (e.g., 40000 kN·m²)
+2. **Specify Loading**: Add a point load (50 kN) at 4m (mid-span)
+3. **Save Project**: Click "Save Project" to preserve your input
+4. **View Results**: Switch to Results tab
+5. **Verify**: Check that reactions sum to 50 kN and are symmetric
+6. **Export**: Download PDF report of results and diagrams
+
+## Tips
+
+- For uniformly distributed loads, use the total load, not load per meter
+- Check reactions sum to total applied vertical load for equilibrium
+- Maximum moment for a simply supported beam with central point load is PL/4
+
+</div>
+
+export default function Page({ children }) {
+  return <div className="container mx-auto max-w-4xl p-4 pb-24">{children}</div>;
+}

@@ -1,0 +1,76 @@
+import { PageHeader } from "@/components/layout/PageHeader";
+import { ManualNav } from "@/components/layout/ManualNav";
+
+<PageHeader title="Getting Started" description="Learn the basics of CESSCalculator" showBack />
+<ManualNav />
+
+<div className="prose prose-invert mt-8 max-w-none">
+
+## Welcome to CESSCalculator
+
+CESSCalculator is a civil engineering structural analysis tool designed for slope-deflection analysis of beams and frames.
+
+## Creating Your First Project
+
+1. **Navigate to the Dashboard** - From the home screen, you'll see options for Beam and Frame analysis
+2. **Choose Analysis Type** - Select either:
+   - **Beam Analysis** - For single or multi-span beams
+   - **Frame Analysis** - For rigid frame structures
+3. **Enter Project Data** - Fill in the geometry, material properties, and loading conditions
+4. **View Results** - Switch to the Results tab to see reactions, diagrams, and analysis output
+
+## Project Management
+
+### Saving Projects
+
+Projects are automatically saved to your browser's local storage as you work. Click "Save Project" to persist your changes.
+
+### Renaming Projects
+
+1. Go to **History** in the bottom navigation
+2. Click the edit icon next to your project name
+3. Enter a new name and click Save
+
+### Duplicating Projects
+
+To create a copy of an existing project:
+1. Navigate to **History**
+2. Click the duplicate icon next to the project
+3. A copy will be created with "(Copy)" appended to the name
+
+### Deleting Projects
+
+**Warning:** Deletion is permanent and cannot be undone.
+
+1. Go to **History**
+2. Click the trash icon next to the project
+3. Confirm the deletion
+
+## Navigation
+
+The app uses a bottom navigation bar with four sections:
+
+- **Home** - Dashboard with quick access to create new projects
+- **History** - View and manage all saved projects
+- **Manual** - Documentation and guides (you are here!)
+- **Settings** - App preferences and data management
+
+## Tips for Success
+
+- **Start Simple** - Begin with a single-span beam to familiarize yourself with the interface
+- **Save Often** - Use the Save button frequently to prevent data loss
+- **Check Units** - Ensure consistent units throughout your input (meters, kN, kN·m²)
+- **Review Results** - Always verify that the calculated reactions and diagrams make physical sense
+
+## Need Help?
+
+If you encounter issues or have questions:
+- Review the manual sections for detailed guidance
+- Check that all required fields are filled in correctly
+- Ensure numerical values are valid (positive where required)
+
+</div>
+
+export default function Page({ children }) {
+  return <div className="container mx-auto max-w-4xl p-4 pb-24">{children}</div>;
+}
