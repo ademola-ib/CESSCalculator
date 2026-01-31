@@ -100,29 +100,7 @@ pnpm format
 pnpm type-check
 ```
 
-## Deployment on Vercel
 
-### Option 1: Deploy via Vercel Dashboard
-
-1. Push your code to GitHub
-2. Visit [vercel.com](https://vercel.com)
-3. Click "New Project"
-4. Import your GitHub repository
-5. Vercel auto-detects Next.js settings
-6. Click "Deploy"
-
-### Option 2: Deploy via Vercel CLI
-
-```bash
-# Install Vercel CLI
-npm i -g vercel
-
-# Deploy
-vercel
-
-# Deploy to production
-vercel --prod
-```
 
 ### Environment Configuration
 
