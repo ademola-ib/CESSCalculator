@@ -2,6 +2,7 @@
 
 import { CalculationStep } from "@/lib/solver/types";
 import { cn } from "@/lib/utils";
+import { MathBlock } from "./MathBlock";
 
 interface CalcStepProps {
   step: CalculationStep;
@@ -17,16 +18,10 @@ export function CalcStep({ step }: CalcStepProps) {
         <div className="flex-1 space-y-2">
           <p className="text-sm text-muted-foreground">{step.description}</p>
 
-          {step.formula && (
-            <div className="rounded bg-muted/50 p-3 font-mono text-sm">
-              {step.formula}
-            </div>
-          )}
+          {step.formula && <MathBlock math={step.formula} />}
 
           {step.substitution && (
-            <div className="rounded bg-muted/30 p-3 font-mono text-sm text-foreground/80">
-              {step.substitution}
-            </div>
+            <MathBlock math={step.substitution} className="bg-muted/30" />
           )}
 
           {step.result !== undefined && (

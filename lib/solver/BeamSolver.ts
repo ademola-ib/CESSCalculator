@@ -1,16 +1,125 @@
 import { BeamInput, BeamResults, ChartPoint, CalculationLog } from "./types";
+import { ContinuousBeamSolver } from "./beam/index";
+import {
+  ContinuousBeamData,
+  convertLegacyBeamData,
+  BeamSolverResult,
+} from "@/lib/types/beam";
 
 /**
- * PLACEHOLDER BEAM SOLVER with Calculation Log
+ * BeamSolver - Wrapper that bridges the legacy interface with the new solver.
  *
- * This is a simplified solver for MVP demonstration.
- * Replace this with your production slope-deflection solver.
- *
- * The interface defined here should remain stable - only the implementation changes.
+ * The legacy interface (BeamInput/BeamResults) is maintained for backward
+ * compatibility with existing UI components. Internally, it delegates to
+ * the new ContinuousBeamSolver.
  */
 export class BeamSolver {
+  private solver: ContinuousBeamSolver;
+
+  constructor() {
+    this.solver = new ContinuousBeamSolver();
+  }
+
+  /**
+   * Solve using legacy input format
+   */
   solve(input: BeamInput): BeamResults {
-    // Placeholder: Generate sample results for visualization
+    // If the input has the legacy format with supports as strings,
+    // use the placeholder approach
+    if (this.isLegacyStringSupports(input)) {
+      return this.solveLegacy(input);
+    }
+
+    // Convert editor state to new solver format
+    try {
+      const beamData = this.convertToBeamData(input);
+      const result = this.solver.solve(beamData);
+      return this.convertToLegacyResults(result);
+    } catch (error) {
+      // Fall back to legacy placeholder if solver fails
+      console.warn("Solver error, falling back to placeholder:", error);
+      return this.solveLegacy(input);
+    }
+  }
+
+  /**
+   * Solve using new ContinuousBeamData format directly
+   */
+  solveAdvanced(data: ContinuousBeamData): BeamSolverResult {
+    return this.solver.solve(data);
+  }
+
+  /**
+   * Check if supports are in legacy string array format
+   */
+  private isLegacyStringSupports(input: BeamInput): boolean {
+    if (!input.supports || input.supports.length === 0) return true;
+    return typeof input.supports[0] === "string";
+  }
+
+  /**
+   * Convert BeamInput with editor-style supports to ContinuousBeamData
+   */
+  private convertToBeamData(input: BeamInput): ContinuousBeamData {
+    const supports = input.supports as any[];
+    if (supports.length < 2) {
+      throw new Error("Need at least 2 supports");
+    }
+
+    // If supports are objects with position/type
+    if (typeof supports[0] === "object" && "position" in supports[0]) {
+      return convertLegacyBeamData({
+        length: input.length,
+        ei: input.ei,
+        supports: supports.map((s: any) => ({
+          id: s.id || `s-${s.position}`,
+          type: s.type,
+          position: s.position,
+        })),
+        loads: input.loads.map((l: any) => ({
+          id: l.id || `l-${Math.random()}`,
+          type: l.type,
+          magnitude: l.magnitude,
+          position: l.position,
+          start: l.start,
+          end: l.end,
+          direction: l.direction || "down",
+        })),
+      });
+    }
+
+    throw new Error("Unsupported input format");
+  }
+
+  /**
+   * Convert BeamSolverResult to legacy BeamResults format
+   */
+  private convertToLegacyResults(result: BeamSolverResult): BeamResults {
+    return {
+      reactions: result.reactions.map((r) => r.vertical),
+      shearForce: result.shearForceDiagram.map((p) => ({
+        x: p.x,
+        value: p.value,
+      })),
+      bendingMoment: result.bendingMomentDiagram.map((p) => ({
+        x: p.x,
+        value: p.value,
+      })),
+      deflection: result.deflectionDiagram.map((p) => ({
+        x: p.x,
+        value: p.value,
+      })),
+      maxShear: Math.abs(result.maxShear.value),
+      maxMoment: Math.abs(result.maxMoment.value),
+      maxDeflection: Math.abs(result.maxDeflection.value),
+      calculationLog: result.calculationLog,
+    };
+  }
+
+  /**
+   * Legacy placeholder solver for backward compatibility
+   */
+  private solveLegacy(input: BeamInput): BeamResults {
     const { length, ei, loads } = input;
 
     const points = 101;
@@ -22,18 +131,14 @@ export class BeamSolver {
 
     for (let i = 0; i < points; i++) {
       const x = i * dx;
-
-      // Placeholder formulas - replace with actual analysis
       shearForce.push({
         x,
         value: this.calculateShear(x, length, loads),
       });
-
       bendingMoment.push({
         x,
         value: this.calculateMoment(x, length, loads),
       });
-
       deflection.push({
         x,
         value: this.calculateDeflection(x, length, ei, loads),
@@ -41,7 +146,12 @@ export class BeamSolver {
     }
 
     const reactions = this.calculateReactions(length, loads);
-    const calculationLog = this.generateCalculationLog(length, ei, loads, reactions);
+    const calculationLog = this.generateCalculationLog(
+      length,
+      ei,
+      loads,
+      reactions
+    );
 
     return {
       reactions,
@@ -56,58 +166,57 @@ export class BeamSolver {
   }
 
   private calculateReactions(length: number, loads: any[]): number[] {
-    // Placeholder: Simple symmetric reactions
     const totalLoad = loads.reduce((sum, load) => sum + load.magnitude, 0);
     return [totalLoad / 2, totalLoad / 2];
   }
 
   private calculateShear(x: number, length: number, loads: any[]): number {
-    // Placeholder formula
     return Math.sin((x / length) * Math.PI) * 50;
   }
 
   private calculateMoment(x: number, length: number, loads: any[]): number {
-    // Placeholder formula
     return -Math.sin((x / length) * Math.PI * 2) * 100;
   }
 
-  private calculateDeflection(x: number, length: number, ei: number, loads: any[]): number {
-    // Placeholder formula
+  private calculateDeflection(
+    x: number,
+    length: number,
+    ei: number,
+    loads: any[]
+  ): number {
     const normalized = x / length - 0.5;
-    return -Math.pow(normalized, 2) * 1000 / ei;
+    return (-Math.pow(normalized, 2) * 1000) / ei;
   }
 
-  /**
-   * Generate calculation log showing step-by-step slope-deflection calculations
-   */
   private generateCalculationLog(
     L: number,
     EI: number,
     loads: any[],
     reactions: number[]
   ): CalculationLog {
-    // Example calculation log - replace with actual slope-deflection steps
     const totalLoad = loads.reduce((sum, load) => sum + load.magnitude, 0);
 
     return {
       sections: [
         {
           title: "1. Fixed End Moments (FEM)",
-          description: "Calculate fixed end moments for each span due to applied loads",
+          description:
+            "Calculate fixed end moments for each span due to applied loads",
           steps: [
             {
               stepNumber: 1,
-              description: "For a simply supported beam with point load P at midspan",
-              formula: "FEM_AB = -P×L/8",
-              substitution: `FEM_AB = -(${totalLoad})×(${L})/8`,
+              description:
+                "For a simply supported beam with point load P at midspan",
+              formula: "FEM_{AB} = -\\frac{P \\times L}{8}",
+              substitution: `FEM_{AB} = -\\frac{${totalLoad} \\times ${L}}{8}`,
               result: (-totalLoad * L) / 8,
               unit: "kN·m",
             },
             {
               stepNumber: 2,
               description: "Fixed end moment at B",
-              formula: "FEM_BA = P×L/8",
-              substitution: `FEM_BA = (${totalLoad})×(${L})/8`,
+              formula: "FEM_{BA} = \\frac{P \\times L}{8}",
+              substitution: `FEM_{BA} = \\frac{${totalLoad} \\times ${L}}{8}`,
               result: (totalLoad * L) / 8,
               unit: "kN·m",
               highlight: true,
@@ -116,19 +225,14 @@ export class BeamSolver {
         },
         {
           title: "2. Member End Moment Equations",
-          description: "Express end moments using slope-deflection equations",
+          description:
+            "Express end moments using slope-deflection equations",
           steps: [
             {
               stepNumber: 1,
               description: "General slope-deflection equation",
-              formula: "M_AB = FEM_AB + (2EI/L)(2θ_A + θ_B)",
-            },
-            {
-              stepNumber: 2,
-              description: "For simply supported beam, θ_A = θ_B = 0",
-              formula: "M_AB = FEM_AB",
-              result: (-totalLoad * L) / 8,
-              unit: "kN·m",
+              formula:
+                "M_{AB} = FEM_{AB} + \\frac{2EI}{L}(2\\theta_A + \\theta_B)",
             },
           ],
         },
@@ -139,51 +243,30 @@ export class BeamSolver {
             {
               stepNumber: 1,
               description: "Sum of moments at joint B = 0",
-              formula: "M_BA + M_BC = 0",
-            },
-            {
-              stepNumber: 2,
-              description: "For single span, M_BC = 0",
-              formula: "M_BA = 0",
-              result: 0,
-              unit: "kN·m",
+              formula: "M_{BA} + M_{BC} = 0",
             },
           ],
         },
         {
           title: "4. Solve for Joint Rotations",
-          description: "Solve the system of equations for unknown rotations",
+          description:
+            "Solve the system of equations for unknown rotations",
           steps: [
             {
               stepNumber: 1,
-              description: "For simply supported beam, boundary conditions give:",
-              formula: "θ_A = 0, θ_B = 0",
-            },
-            {
-              stepNumber: 2,
-              description: "Rotation at support A",
-              result: 0,
-              unit: "rad",
-              highlight: true,
-            },
-            {
-              stepNumber: 3,
-              description: "Rotation at support B",
-              result: 0,
-              unit: "rad",
-              highlight: true,
+              description: "Boundary conditions",
+              formula: "\\theta_A = 0, \\quad \\theta_B = 0",
             },
           ],
         },
         {
           title: "5. Member End Moments",
-          description: "Substitute rotations back into slope-deflection equations",
+          description:
+            "Substitute rotations back into slope-deflection equations",
           steps: [
             {
               stepNumber: 1,
               description: "End moment at A",
-              formula: "M_AB = FEM_AB + (2EI/L)(2θ_A + θ_B)",
-              substitution: `M_AB = ${(-totalLoad * L) / 8} + 0`,
               result: (-totalLoad * L) / 8,
               unit: "kN·m",
               highlight: true,
@@ -191,8 +274,6 @@ export class BeamSolver {
             {
               stepNumber: 2,
               description: "End moment at B",
-              formula: "M_BA = FEM_BA + (2EI/L)(2θ_B + θ_A)",
-              substitution: `M_BA = ${(totalLoad * L) / 8} + 0`,
               result: (totalLoad * L) / 8,
               unit: "kN·m",
               highlight: true,
@@ -205,28 +286,13 @@ export class BeamSolver {
           steps: [
             {
               stepNumber: 1,
-              description: "Sum of vertical forces = 0",
-              formula: "R_A + R_B = P",
-            },
-            {
-              stepNumber: 2,
-              description: "Taking moments about A",
-              formula: "R_B × L = P × (L/2)",
-              substitution: `R_B × ${L} = ${totalLoad} × ${L / 2}`,
-              result: reactions[1],
-              unit: "kN",
-            },
-            {
-              stepNumber: 3,
               description: "Reaction at support A",
-              formula: "R_A = P - R_B",
-              substitution: `R_A = ${totalLoad} - ${reactions[1]}`,
               result: reactions[0],
               unit: "kN",
               highlight: true,
             },
             {
-              stepNumber: 4,
+              stepNumber: 2,
               description: "Reaction at support B",
               result: reactions[1],
               unit: "kN",

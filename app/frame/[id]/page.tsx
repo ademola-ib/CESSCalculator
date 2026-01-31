@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useProjectStore } from "@/lib/store/projectStore";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { FrameInputTab } from "@/components/frame/FrameInputTab";
@@ -7,12 +8,16 @@ import { FrameResultsTab } from "@/components/frame/FrameResultsTab";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Camera } from "lucide-react";
+import { ImageUploadModal } from "@/components/gemini/ImageUploadModal";
+import { ExtractionReviewScreen } from "@/components/gemini/ExtractionReviewScreen";
 
 export default function FrameProjectPage({ params }: { params: { id: string } }) {
   const { id } = params;
   const router = useRouter();
   const project = useProjectStore((state) => state.projects.find((p) => p.id === id));
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [extractedData, setExtractedData] = useState<any>(null);
 
   if (!project) {
     return (
@@ -26,9 +31,47 @@ export default function FrameProjectPage({ params }: { params: { id: string } })
     );
   }
 
+  const handleExtractionComplete = (data: any) => {
+    setShowImageModal(false);
+    setExtractedData(data);
+  };
+
+  const handleConfirmExtraction = (data: any) => {
+    // TODO: Apply extracted data to the project
+    // This will populate the editor with the extracted frame parameters
+    setExtractedData(null);
+  };
+
+  // Show review screen if data was extracted
+  if (extractedData) {
+    return (
+      <div className="container mx-auto max-w-6xl p-4 pb-24">
+        <PageHeader title={project.name} description="Review Extracted Data" showBack />
+        <div className="mt-6">
+          <ExtractionReviewScreen
+            data={extractedData}
+            onConfirm={handleConfirmExtraction}
+            onCancel={() => setExtractedData(null)}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto max-w-6xl p-4 pb-24">
-      <PageHeader title={project.name} description="Frame Analysis" showBack />
+      <div className="flex items-center justify-between">
+        <PageHeader title={project.name} description="Frame Analysis" showBack />
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowImageModal(true)}
+          className="gap-2"
+        >
+          <Camera className="h-4 w-4" />
+          Solve from Image
+        </Button>
+      </div>
 
       <Tabs defaultValue="input" className="mt-6">
         <TabsList className="grid w-full grid-cols-2">
@@ -42,6 +85,15 @@ export default function FrameProjectPage({ params }: { params: { id: string } })
           <FrameResultsTab projectId={id} />
         </TabsContent>
       </Tabs>
+
+      {showImageModal && (
+        <ImageUploadModal
+          isOpen={showImageModal}
+          problemType="frame"
+          onExtracted={handleExtractionComplete}
+          onClose={() => setShowImageModal(false)}
+        />
+      )}
     </div>
   );
 }

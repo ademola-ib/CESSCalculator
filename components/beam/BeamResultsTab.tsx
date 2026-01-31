@@ -30,13 +30,26 @@ export function BeamResultsTab({ projectId }: BeamResultsTabProps) {
     const input = {
       length: project.data.length,
       ei: project.data.ei,
-      spans: 1, // Simplified for now
+      spans: 1,
       supports: project.data.supports || [],
       loads: project.data.loads || [],
     };
 
-    return solver.solve(input);
+    try {
+      return solver.solve(input);
+    } catch (error) {
+      console.error("Solver error:", error);
+      return null;
+    }
   }, [project?.data]);
+
+  // Extract support positions for reference lines on diagrams
+  const supportPositions = useMemo(() => {
+    if (!project?.data?.supports) return [];
+    return project.data.supports
+      .filter((s: any) => typeof s === "object" && "position" in s)
+      .map((s: any) => s.position as number);
+  }, [project?.data?.supports]);
 
   const handleExportPDF = () => {
     toast.info("PDF export feature coming soon");
@@ -136,13 +149,29 @@ export function BeamResultsTab({ projectId }: BeamResultsTabProps) {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <BeamDiagram data={project.data} />
+            <BeamDiagram
+              data={project.data}
+              shearForce={results.shearForce}
+              bendingMoment={results.bendingMoment}
+              deflection={results.deflection}
+              supportPositions={supportPositions}
+            />
           </CardContent>
         </Card>
       </TabsContent>
 
       <TabsContent value="calculations">
-        <CalculationsTab log={results.calculationLog} />
+        {results.calculationLog ? (
+          <CalculationsTab log={results.calculationLog} />
+        ) : (
+          <Card>
+            <CardContent className="flex min-h-[200px] items-center justify-center">
+              <p className="text-muted-foreground">
+                Calculation log not available for this input.
+              </p>
+            </CardContent>
+          </Card>
+        )}
       </TabsContent>
     </Tabs>
   );
